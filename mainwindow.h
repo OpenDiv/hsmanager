@@ -3,6 +3,10 @@
 
 #include <SFML/Audio.hpp>
 
+//TEMP
+#include <chrono>
+//
+
 #include <QDebug>
 #include <QDir>
 #include <QFileDialog>
@@ -24,6 +28,10 @@
 
 #include "selectedsoundkeyfilter.h"
 #include "soundfile.h"
+#include "qcustomplot.h"
+#include "waveform.h"
+#include "pathData.h"
+#include "controller.h"
 
  /* .WAV (16-bit)
  * 44100/22050//11025 hz
@@ -43,6 +51,8 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr, pathData *data = nullptr);
     bool generateSoundFolders();
+
+    void tempPlot(fs::path path);
 
     bool getSoundSelectedState();
     void setSoundSelectedState(bool state);

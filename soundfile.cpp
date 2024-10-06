@@ -1,10 +1,25 @@
 #include "soundfile.h"
+
+#include "soundutils.h"
+#include "pathdata.h"
+
+#include <iostream>
+#include <fstream>
+#include <cstdint>
+
 #include <QDebug>
 
 soundFile::soundFile(std::string path) : filePath(path)
 {
+    qDebug()<<"#SOUNDFILE# [+] Constructor worked: "<<QString::fromStdString(fs::path(path).filename().string());
     updateFile();
+
     fileExtension = filePath.extension().string();
+}
+
+void soundFile::fileUpdated()
+{
+    emit audioUpdated(shared_from_this());
 }
 
 bool soundFile::updateFile() // fix l8r with extension issues
@@ -82,10 +97,16 @@ long soundFile::getSizeBytes()
 void soundFile::updateLengthMs()
 {
     if(wavHeader.byteRate!=0)
+    {
         if(wavHeader.subchunk2Size < std::numeric_limits<unsigned long>::max()/1000)
-            { lengthMs = (wavHeader.subchunk2Size*1000)/wavHeader.byteRate; }
-        else
-            { lengthMs = ((wavHeader.subchunk2Size)/wavHeader.byteRate)*1000; }
+        {
+            lengthMs = (wavHeader.subchunk2Size*1000)/wavHeader.byteRate;
+        }
+    }
+    else
+    {
+        lengthMs = ((wavHeader.subchunk2Size)/wavHeader.byteRate)*1000;
+    }
 }
 
 long soundFile::getLengthMs()
@@ -177,12 +198,19 @@ bool soundFile::startPlayingAudioFile()
 
     sf::Sound::Status status = sound.getStatus();
 
+    emit audioStateChanged(status != sf::Sound::Status::Playing);
+
     if(status == sf::Sound::Status::Stopped)
         sound.play();
-    if(status == sf::Sound::Status::Paused)
+    else if(status == sf::Sound::Status::Paused)
         sound.play();
-    if(status == sf::Sound::Status::Playing)
+    else if(status == sf::Sound::Status::Playing)
         sound.pause();
+
+    sf::Time t1;
+    t1 = sound.getPlayingOffset();
+    qDebug()<<QString::number(t1.asSeconds());
+
 
     return true;
 }
@@ -225,7 +253,7 @@ QString soundFile::formatIssueTextGenerator()
 fs::path soundFile::generateClonedFilePath(fs::path originalFilePath)
 {
     std::string tempFolderPath = pathData::getAudioPath().parent_path().string()+"\\temp\\";
-    if(originalFilePath.string().find(tempFolderPath) == -1)
+    if(originalFilePath.string().find(tempFolderPath) == std::string::npos)
     {
         return fs::path(originalFilePath.string().replace(
             originalFilePath.string().find("\\sound\\"), 7, "\\temp\\").insert(
@@ -238,7 +266,7 @@ fs::path soundFile::generateClonedFilePath(fs::path originalFilePath)
 fs::path soundFile::generateOriginalFilePath(fs::path clonedFilePath)
 {
     std::string soundFolderPath = pathData::getAudioPath().string();
-    if(clonedFilePath.string().find(soundFolderPath) == -1 && clonedFilePath.string().find("_clone") != -1)
+    if(clonedFilePath.string().find(soundFolderPath) == std::string::npos && clonedFilePath.string().find("_clone") != std::string::npos)
     {
         return fs::path(clonedFilePath.string().replace(
             clonedFilePath.string().find("\\temp\\"), 6, "\\sound\\").replace(
@@ -260,9 +288,19 @@ fs::path soundFile::generateWavFileClone(fs::path originalFilePath)
     }
 }
 
+//TEMP
+int64_t soundFile::getPlayingOffsetMethod()
+{
+    sf::Time t1;
+    t1 = sound.getPlayingOffset();
+    return t1.asMicroseconds();
+}
+//TEMP
+
 soundFile::~soundFile()
 {
-    if(filePath.string().find("_clone") != -1 ) // if soundFile = clone
+    qDebug()<<"#SOUNDFILE# [-] destructor worked: "<<QString::fromStdString(getFileName());
+    if(filePath.string().find("_clone") != std::string::npos ) // if soundFile = clone
     {
         fs::path originalFilePath = generateOriginalFilePath(filePath);
         if(fs::exists(originalFilePath))

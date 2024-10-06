@@ -1,27 +1,24 @@
 #ifndef SOUNDFILE_H
 #define SOUNDFILE_H
 
-#include <iostream>
-#include <fstream>
 #include <string>
 #include <filesystem>
-#include <cstdint>
+
+#include <QObject>
 #include <cstring>
 #include <cstdlib>
 #include <QString>
 
+#include <SFML/System.hpp>
 #include <SFML/Audio.hpp>
 
-#include "soundutils.h"
-#include "pathdata.h"
 #include "wavHeader.h"
 
 namespace fs = std::filesystem;
 
-
-
-class soundFile
+class soundFile : public QObject, public std::enable_shared_from_this<soundFile>
 {
+    Q_OBJECT
 public:
     soundFile(std::string path);
     wavHeader wavHeader;
@@ -49,6 +46,8 @@ public:
 
     bool startPlayingAudioFile();
 
+    void fileUpdated();
+
     QString formatIssueTextGenerator();
 
     static fs::path generateClonedFilePath(fs::path originalFilePath);
@@ -57,6 +56,9 @@ public:
 
     ~soundFile();
 
+    //TEMP
+    int64_t getPlayingOffsetMethod();
+    //TEMP
 private:
     bool checkIfFileExists();
     bool checkIsWavState();
@@ -73,6 +75,10 @@ private:
 
     fs::path filePath;
     std::string fileExtension;
+
+signals:
+    void audioStateChanged(bool isPlaying);
+    void audioUpdated(std::shared_ptr<soundFile> soundFilePtr);
 };
 
 #endif // SOUNDFILE_H

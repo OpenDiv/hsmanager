@@ -3,8 +3,6 @@
 
 soundUtils::soundUtils() {}
 
-
-
 bool soundUtils::readSamples(std::ifstream &readingStream, std::vector<uint8_t> &samples)
 {
     qDebug()<<"step #reading samples";

@@ -28,8 +28,8 @@ public:
     static bool setSampleRate(fs::path filePath, uint32_t newSampleRate);
 
     static bool setVolume(fs::path filePath, double newVolumeParam);
-private:
     static bool readSamples(std::ifstream &readingStream, std::vector<uint8_t> &samples);
+private:
     static void convertSamplesInto16Bit(std::ifstream &writingStream, std::vector<uint16_t> &samplesNew, size_t sampleCount, int bitsPerSample);
 };
 

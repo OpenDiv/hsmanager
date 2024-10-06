@@ -12,14 +12,16 @@ MainWindow::MainWindow(QWidget *parent, pathData *data)
     ui->setupUi(this);
 
     QWidget::setWindowTitle("TfSound Manager");
-    ui->tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+
     showSoundWidgets(false);
 
+    ui->tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-    ui->label_audioPath->setText(data->qGetAudioPath());
 
     setupWatcher(this);
     setupWrongFormatIcon();
+
+    //controller* ctrl = new controller(ui->waveFormWidget);
 }
 
 void MainWindow::setupWatcher(MainWindow* MainWindow)
@@ -127,9 +129,27 @@ void MainWindow::openSelectedItemUI(QTableWidgetItem *item)
         if(getActiveTableItem() == item && itemFileStream.is_open())
             { return; }
         setActiveTableItem(item);
-        activeItemFile = std::make_unique<soundFile>(itemFileClonePath.string());
+
+
+
+
+
+        if(activeItemFile.get())
+        {
+        disconnect(activeItemFile.get(), &soundFile::audioStateChanged, ui->waveFormWidget, &waveForm::slotSwitchProgressBarRenderLoop);
+        disconnect(activeItemFile.get(), &soundFile::audioUpdated, ui->waveFormWidget, &waveForm::slotPlotWaveForm);
+        }
+
+        activeItemFile = std::make_shared<soundFile>(itemFileClonePath.string());
+
+        connect(activeItemFile.get(), &soundFile::audioStateChanged, ui->waveFormWidget, &waveForm::slotSwitchProgressBarRenderLoop);
+        connect(activeItemFile.get(), &soundFile::audioUpdated, ui->waveFormWidget, &waveForm::slotPlotWaveForm);
+        activeItemFile->fileUpdated();
+
+
         if(activeItemFile->getIsWavState())
         {
+            //tempPlot(activeItemFile->getFilePath());
             setSoundSelectedState(true);
             showSoundWidgets(getSoundSelectedState());
 
@@ -139,7 +159,6 @@ void MainWindow::openSelectedItemUI(QTableWidgetItem *item)
         }
     }
 }
-
 
 void MainWindow::showSoundWidgets(bool needToShow)
 {
@@ -172,7 +191,6 @@ void MainWindow::showSoundWidgets(bool needToShow)
     ui->pushButton_setHitsound->setEnabled(needToShow);
     ui->pushButton_setKillsound->setEnabled(needToShow);
     ui->pushButton_closeFile->setEnabled(needToShow);
-
 }
 
 bool MainWindow::moveSound(QTableWidgetItem *item, bool isHitsound)
@@ -232,8 +250,11 @@ void MainWindow::on_pushButton_closeFile_clicked()
     setActiveTableItem(nullptr);
     setSoundSelectedState(false);
     showSoundWidgets(getSoundSelectedState());
-    activeItemFile = nullptr;
+
     ui->tableWidget->setFocus(); // костыль inactive selection fix l8r
+
+    activeItemFile.reset();
+    ui->waveFormWidget->activeItemFile.reset();
 }
 
 QTableWidgetItem* MainWindow::getActiveTableItem()
@@ -266,7 +287,22 @@ std::shared_ptr<soundFile> MainWindow::getActiveItemFile()
 
 void MainWindow::on_pushButton_clicked()
 {
-    soundUtils::setVolume(fs::path("C:\\Users\\Sema\\Desktop\\viper_orig.wav"), 4);
+    //ctrl->userRun(std::shared_ptr<soundFile>(activeItemFile));
+
+    while(true)
+    {
+    int64_t currentOffset = activeItemFile->getPlayingOffsetMethod();
+        currentOffset = (int)(currentOffset*0.000001 * 44100.0);
+    ui->label_audioPath->setText(QString::number(currentOffset)+" ("+QString::number((double)currentOffset*0.000001)+")s");
+    ui->waveFormWidget->setVerticalLine((int)(currentOffset*0.000001 * 44100.0));
+    Sleep(50);
+    }
+}
+
+void MainWindow::tempPlot(fs::path path)
+{
+    if(activeItemFile->getIsTfFormat())
+        ui->waveFormWidget->plotWaveForm(path);
 }
 
 MainWindow::~MainWindow()
