@@ -79,6 +79,10 @@ private:
 signals:
     void audioStateChanged(bool isPlaying);
     void audioUpdated(std::shared_ptr<soundFile> soundFilePtr);
+
+    void handleOffsetAnwser(int64_t);
+public slots:
+    void handleOffsetRequest();
 };
 
 #endif // SOUNDFILE_H

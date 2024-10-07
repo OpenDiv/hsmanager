@@ -30,10 +30,14 @@ public:
 public slots:
     void slotSwitchProgressBarRenderLoop(bool isPlaying);
     void slotPlotWaveForm(std::shared_ptr<soundFile> newObject);
+
+    void handleOffsetData(int64_t);
 private slots:
     void slotMousePress(QMouseEvent *event);
     void slotMouseMove(QMouseEvent *event);
 signals:
+    void progressBarReplotted();
+
     void waveFormReady();
 
 private:

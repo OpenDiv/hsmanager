@@ -34,7 +34,8 @@ SOURCES += \
     selectedsoundkeyfilter.cpp \
     soundfile.cpp \
     soundutils.cpp \
-    waveform.cpp
+    waveform.cpp \
+    worker.cpp
 
 HEADERS += \
     controller.h \
@@ -45,7 +46,8 @@ HEADERS += \
     soundfile.h \
     soundutils.h \
     wavHeader.h \
-    waveform.h
+    waveform.h \
+    worker.h
 
 FORMS += \
     mainwindow.ui

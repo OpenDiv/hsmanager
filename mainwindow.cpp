@@ -21,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent, pathData *data)
     setupWatcher(this);
     setupWrongFormatIcon();
 
-    //controller* ctrl = new controller(ui->waveFormWidget);
+    ctrl = new Controller(ui->waveFormWidget);
 }
 
 void MainWindow::setupWatcher(MainWindow* MainWindow)
@@ -287,16 +287,7 @@ std::shared_ptr<soundFile> MainWindow::getActiveItemFile()
 
 void MainWindow::on_pushButton_clicked()
 {
-    //ctrl->userRun(std::shared_ptr<soundFile>(activeItemFile));
-
-    while(true)
-    {
-    int64_t currentOffset = activeItemFile->getPlayingOffsetMethod();
-        currentOffset = (int)(currentOffset*0.000001 * 44100.0);
-    ui->label_audioPath->setText(QString::number(currentOffset)+" ("+QString::number((double)currentOffset*0.000001)+")s");
-    ui->waveFormWidget->setVerticalLine((int)(currentOffset*0.000001 * 44100.0));
-    Sleep(50);
-    }
+    emit ctrl->operate();
 }
 
 void MainWindow::tempPlot(fs::path path)

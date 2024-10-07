@@ -8,6 +8,7 @@
 #include <cstdint>
 
 #include <QDebug>
+#include <QMetaType>
 
 soundFile::soundFile(std::string path) : filePath(path)
 {
@@ -335,5 +336,12 @@ soundFile::~soundFile()
             }
         }
     }
+}
+
+void soundFile::handleOffsetRequest()
+{
+    qRegisterMetaType<int64_t>("int64_t");
+    int64_t offset = getPlayingOffsetMethod();
+    emit(handleOffsetAnwser(offset));
 }
 

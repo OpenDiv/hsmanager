@@ -67,6 +67,7 @@ public:
     QTableWidgetItem* getActiveTableItem();
     std::shared_ptr<soundFile> getActiveItemFile();
 
+    Controller* ctrl;
     QPushButton* getPlayButton();
     ~MainWindow();
 

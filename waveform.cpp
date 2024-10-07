@@ -1,8 +1,9 @@
 #include "waveform.h"
 
+#include <QMetaType>
 waveForm::waveForm(QWidget* parent) : QCustomPlot(parent), verticalLine(nullptr)
 {
-
+    qRegisterMetaType<int64_t>("int64_t");
     addGraph();
     setBackground(Qt::transparent);
     xAxis->setTicks(false);
@@ -126,4 +127,18 @@ void waveForm::slotPlotWaveForm(std::shared_ptr<soundFile> newObject)
     plotWaveForm(activeItemFile->getFilePath());
     else
         qDebug()<<"#SIGNAL PLOTWAVEFORM# itemFile is nullptr";
+}
+
+void waveForm::handleOffsetData(int64_t offset)
+{
+    QVector<double> x(2), y(2);
+    y[0] = -1.05;
+    y[1] = 1.05;
+
+    x[0] = static_cast<double>(offset);
+    x[1] = static_cast<double>(offset);
+
+    verticalLine->setData(x, y);
+    replot();
+    emit(progressBarReplotted());
 }
