@@ -42,12 +42,11 @@ bool waveForm::plotWaveForm(fs::path filePath)
     for (int i = 0; i < numSamples; i++)
     {
         x[i] = static_cast<double>(i);
-        y[i] = static_cast<double>(samples[i]) / (samples[i] < 0 ? 32768.0 : 32767.0);  // Нормализация для диапазона [-32768, 32767]
+        y[i] = static_cast<double>(samples[i]) / (samples[i] < 0 ? 32768.0 : 32767.0);
     }
 
-    // Установка данных графика
     if (graphCount() == 0) {
-        addGraph();  // Добавляем график, если он еще не создан
+        addGraph();
     }
 
     graph(0)->setData(x, y);
