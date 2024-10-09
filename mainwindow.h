@@ -28,9 +28,6 @@
 
 #include "selectedsoundkeyfilter.h"
 #include "soundfile.h"
-#include "qcustomplot.h"
-#include "waveform.h"
-#include "pathData.h"
 #include "controller.h"
 
  /* .WAV (16-bit)
@@ -52,12 +49,12 @@ public:
     MainWindow(QWidget *parent = nullptr, pathData *data = nullptr);
     bool generateSoundFolders();
 
-    void tempPlot(fs::path path);
-
     bool getSoundSelectedState();
     void setSoundSelectedState(bool state);
 
     void openSelectedItemUI(QTableWidgetItem* item);
+    void setupSoundFileConnections(soundFile* newSoundFile);
+    void removeSoundFileConnections(soundFile* oldSoundFile);
 
     void updateCurrentSoundLabels();
     void updateLabelFromFile(std::string filePath, QString prefix, QLabel* curLabel);
@@ -80,6 +77,10 @@ private:
     selectedSoundKeyFilter *keyFilter;
     fs::path tfPath; // сам путь
 
+    void setupWatcher(MainWindow* MainWindow);
+    void setupFilter(MainWindow* MainWindow);
+    void setupWrongFormatIcon();
+
     void updateTableItemTitles();
     void updateTableItem();
 
@@ -90,9 +91,7 @@ private:
     void showSoundWidgets(bool needToShow);
     bool isSoundSelected = false;
 
-    void setupWatcher(MainWindow* MainWindow);
-    void setupFilter(MainWindow* MainWindow);
-    void setupWrongFormatIcon();
+
 
 
 

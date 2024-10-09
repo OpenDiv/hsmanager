@@ -130,26 +130,13 @@ void MainWindow::openSelectedItemUI(QTableWidgetItem *item)
             { return; }
         setActiveTableItem(item);
 
-
-
-
-
-        if(activeItemFile.get())
-        {
-        disconnect(activeItemFile.get(), &soundFile::audioStateChanged, ui->waveFormWidget, &waveForm::slotSwitchProgressBarRenderLoop);
-        disconnect(activeItemFile.get(), &soundFile::audioUpdated, ui->waveFormWidget, &waveForm::slotPlotWaveForm);
-        }
-
         activeItemFile = std::make_shared<soundFile>(itemFileClonePath.string());
 
-        connect(activeItemFile.get(), &soundFile::audioStateChanged, ui->waveFormWidget, &waveForm::slotSwitchProgressBarRenderLoop);
-        connect(activeItemFile.get(), &soundFile::audioUpdated, ui->waveFormWidget, &waveForm::slotPlotWaveForm);
-        activeItemFile->fileUpdated();
-
+        setupSoundFileConnections(activeItemFile.get()); // connects to waveForm
+        activeItemFile->fileUpdated(); // emit fileUpdate to waveForm
 
         if(activeItemFile->getIsWavState())
         {
-            //tempPlot(activeItemFile->getFilePath());
             setSoundSelectedState(true);
             showSoundWidgets(getSoundSelectedState());
 
@@ -158,6 +145,12 @@ void MainWindow::openSelectedItemUI(QTableWidgetItem *item)
             ui->label_openLength->setText(QString::number(activeItemFile->getLengthMs())+" ms");
         }
     }
+}
+
+void MainWindow::setupSoundFileConnections(soundFile* newSoundFile)
+{
+    connect(activeItemFile.get(), &soundFile::objectCreated, ui->waveFormWidget, &waveForm::slotGetSoundFile);
+    connect(activeItemFile.get(), &soundFile::objectDestroyed, ui->waveFormWidget, &waveForm::slotSoundFileDestroyed);
 }
 
 void MainWindow::showSoundWidgets(bool needToShow)
@@ -217,12 +210,6 @@ bool MainWindow::moveSound(QTableWidgetItem *item, bool isHitsound)
     return true;
 }
 
-void MainWindow::on_pushButton_addItems_clicked()
-{
-    QStringList newSoundFiles = QFileDialog::getOpenFileNames(nullptr, tr("Add files"), data->qGetAudioPath(), tr("Audio files (*.wav *.mp3)"));
-    data->addNewFilesIntoSoundFolder(newSoundFiles);
-}
-
 bool MainWindow::getSoundSelectedState()
 {
     return MainWindow::isSoundSelected;
@@ -231,6 +218,32 @@ bool MainWindow::getSoundSelectedState()
 void MainWindow::setSoundSelectedState(bool state)
 {
     MainWindow::isSoundSelected = state;
+}
+
+QPushButton* MainWindow::getPlayButton()
+{
+    return ui->pushButton_closeFile;
+}
+
+QTableWidgetItem* MainWindow::getActiveTableItem()
+{
+    return activeTableItem;
+}
+
+void MainWindow::setActiveTableItem(QTableWidgetItem* newItem)
+{
+    activeTableItem = newItem;
+}
+
+std::shared_ptr<soundFile> MainWindow::getActiveItemFile()
+{
+    return std::shared_ptr<soundFile>(activeItemFile);
+}
+
+void MainWindow::on_pushButton_addItems_clicked()
+{
+    QStringList newSoundFiles = QFileDialog::getOpenFileNames(nullptr, tr("Add files"), data->qGetAudioPath(), tr("Audio files (*.wav *.mp3)"));
+    data->addNewFilesIntoSoundFolder(newSoundFiles);
 }
 
 void MainWindow::on_pushButton_setHitsound_clicked()
@@ -257,16 +270,6 @@ void MainWindow::on_pushButton_closeFile_clicked()
     ui->waveFormWidget->activeItemFile.reset();
 }
 
-QTableWidgetItem* MainWindow::getActiveTableItem()
-{
-    return activeTableItem;
-}
-
-void MainWindow::setActiveTableItem(QTableWidgetItem* newItem)
-{
-    activeTableItem = newItem;
-}
-
 void MainWindow::on_pushButton_icon_clicked()
 {
     if(activeItemFile->getIfExistsState() && activeItemFile->getIsWavState())
@@ -275,25 +278,9 @@ void MainWindow::on_pushButton_icon_clicked()
     }
 }
 
-QPushButton* MainWindow::getPlayButton()
-{
-    return ui->pushButton_closeFile;
-}
-
-std::shared_ptr<soundFile> MainWindow::getActiveItemFile()
-{
-    return std::shared_ptr<soundFile>(activeItemFile);
-}
-
 void MainWindow::on_pushButton_clicked()
 {
     emit ctrl->operate();
-}
-
-void MainWindow::tempPlot(fs::path path)
-{
-    if(activeItemFile->getIsTfFormat())
-        ui->waveFormWidget->plotWaveForm(path);
 }
 
 MainWindow::~MainWindow()

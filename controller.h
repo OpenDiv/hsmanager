@@ -4,8 +4,8 @@
 #include <QObject>
 #include <QThread>
 
-#include "waveform.h"
 #include "worker.h"
+
 class Controller : public QObject
 {
     Q_OBJECT

@@ -12,7 +12,8 @@
 #include <SFML/System.hpp>
 #include <SFML/Audio.hpp>
 
-#include "wavHeader.h"
+#include "pathdata.h"
+#include "soundutils.h"
 
 namespace fs = std::filesystem;
 
@@ -78,11 +79,13 @@ private:
 
 signals:
     void audioStateChanged(bool isPlaying);
-    void audioUpdated(std::shared_ptr<soundFile> soundFilePtr);
+    void objectCreated(std::shared_ptr<soundFile> soundFilePtr);
+    void objectDestroyed();
 
     void handleOffsetAnwser(int64_t);
 public slots:
     void handleOffsetRequest();
+
 };
 
 #endif // SOUNDFILE_H

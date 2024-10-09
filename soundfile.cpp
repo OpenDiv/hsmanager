@@ -1,8 +1,5 @@
 #include "soundfile.h"
 
-#include "soundutils.h"
-#include "pathdata.h"
-
 #include <iostream>
 #include <fstream>
 #include <cstdint>
@@ -20,7 +17,7 @@ soundFile::soundFile(std::string path) : filePath(path)
 
 void soundFile::fileUpdated()
 {
-    emit audioUpdated(shared_from_this());
+    emit objectCreated(shared_from_this());
 }
 
 bool soundFile::updateFile() // fix l8r with extension issues
@@ -189,13 +186,11 @@ void soundFile::mp3IntoWav()
 
 bool soundFile::startPlayingAudioFile()
 {
-    qDebug()<<"playing "<<QString::fromStdString(this->getFileName());
+    //qDebug()<<"playing "<<QString::fromStdString(this->getFileName());
     sf::Sound currentSound;
 
     if(sound.getBuffer() == nullptr)
         return false;
-
-    sound.setPitch(sound.getPitch()+0.01);
 
     sf::Sound::Status status = sound.getStatus();
 
@@ -211,7 +206,6 @@ bool soundFile::startPlayingAudioFile()
     sf::Time t1;
     t1 = sound.getPlayingOffset();
     qDebug()<<QString::number(t1.asSeconds());
-
 
     return true;
 }
@@ -292,11 +286,17 @@ fs::path soundFile::generateWavFileClone(fs::path originalFilePath)
 //TEMP
 int64_t soundFile::getPlayingOffsetMethod()
 {
-    sf::Time t1;
-    t1 = sound.getPlayingOffset();
-    return t1.asMicroseconds();
+    return sound.getPlayingOffset().asMicroseconds();
 }
 //TEMP
+
+void soundFile::handleOffsetRequest()
+{
+    qRegisterMetaType<int64_t>("int64_t");
+    int64_t offset = getPlayingOffsetMethod();
+    emit(handleOffsetAnwser(offset));
+}
+
 
 soundFile::~soundFile()
 {
@@ -336,12 +336,7 @@ soundFile::~soundFile()
             }
         }
     }
+    emit objectDestroyed();
 }
 
-void soundFile::handleOffsetRequest()
-{
-    qRegisterMetaType<int64_t>("int64_t");
-    int64_t offset = getPlayingOffsetMethod();
-    emit(handleOffsetAnwser(offset));
-}
 

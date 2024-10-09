@@ -18,8 +18,6 @@ waveForm::waveForm(QWidget* parent) : QCustomPlot(parent), verticalLine(nullptr)
     connect(this, &QCustomPlot::mouseMove, this, &waveForm::slotMouseMove);
 }
 
-
-
 bool waveForm::plotWaveForm(fs::path filePath)
 {
     std::ifstream plotStream(filePath, std::ios::binary);
@@ -59,6 +57,7 @@ bool waveForm::plotWaveForm(fs::path filePath)
 
     return true;
 }
+
 void waveForm::setVerticalLine(int coordX)
 {
     QVector<double> x(2), y(2);
@@ -114,19 +113,18 @@ void waveForm::slotMouseMove(QMouseEvent *event)
     if(QApplication::mouseButtons()) slotMousePress(event);
 }
 
-void waveForm::slotSwitchProgressBarRenderLoop(bool isPlaying)
+void waveForm::slotGetSoundFile(std::shared_ptr<soundFile> newSoundFile)
 {
-    qDebug()<<"#SIGNAL switchProgressBarRenderLoop# ACTIVATED";
+    activeItemFile.reset();
+    activeItemFile = newSoundFile;
+    if(activeItemFile->getIsWavState())
+        plotWaveForm(activeItemFile->getFilePath());
+    emit soundFilePrepared();
 }
+
 void waveForm::slotPlotWaveForm(std::shared_ptr<soundFile> newObject)
 {
-    activeItemFile = nullptr;
-    activeItemFile = newObject;
-    qDebug()<<"#SIGNAL plotWaveForm# ACTIVATED";
-    if(activeItemFile)
-    plotWaveForm(activeItemFile->getFilePath());
-    else
-        qDebug()<<"#SIGNAL PLOTWAVEFORM# itemFile is nullptr";
+
 }
 
 void waveForm::handleOffsetData(int64_t offset)
@@ -141,4 +139,9 @@ void waveForm::handleOffsetData(int64_t offset)
     verticalLine->setData(x, y);
     replot();
     emit(progressBarReplotted());
+}
+
+void waveForm::slotSoundFileDestroyed()
+{
+    emit soundFileDestroyed();
 }

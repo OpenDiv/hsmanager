@@ -1,5 +1,4 @@
 #include "controller.h"
-#include "worker.h"
 
 #include <QMetaType>
 
@@ -12,6 +11,7 @@ Controller::Controller(waveForm* waveFormObj)
     connect(&workerThread, &QThread::finished, worker, &QObject::deleteLater);
     connect(this, &Controller::operate, worker, &Worker::doWork);
     connect(worker, &Worker::resultReady, this, [=](){qDebug()<<"finished worker thread";});
+
     workerThread.start();
 }
 

@@ -11,7 +11,9 @@ class Worker : public QObject
     Q_OBJECT
 public:
     waveForm* waveFormWidget;
+
 public slots:
+    void setupSoundFileConnections();
     void doWork();
     void handleOffset(int64_t);
     void rebuildConfirm();

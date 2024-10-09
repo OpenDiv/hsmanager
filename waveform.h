@@ -5,8 +5,6 @@
 #include <QThread>
 
 #include "qcustomplot.h"
-#include "soundutils.h"
-#include "wavHeader.h"
 #include "soundfile.h"
 
 namespace fs = std::filesystem;
@@ -16,28 +14,26 @@ class waveForm : public QCustomPlot
     Q_OBJECT
 public:
     explicit waveForm(QWidget *parent = nullptr);
-
-    std::shared_ptr<soundFile> activeItemFile;
-
-    void setVerticalLine(int coordX);
     bool plotWaveForm(fs::path filePath);
+    void setVerticalLine(int coordX);
 
     int getSamplesAmount();
     int getMsLength();
 
-
+    std::shared_ptr<soundFile> activeItemFile;
     fs::path getFilePath();
 public slots:
-    void slotSwitchProgressBarRenderLoop(bool isPlaying);
+    void slotGetSoundFile(std::shared_ptr<soundFile> newSoundFile);
     void slotPlotWaveForm(std::shared_ptr<soundFile> newObject);
-
     void handleOffsetData(int64_t);
+    void slotSoundFileDestroyed();
 private slots:
     void slotMousePress(QMouseEvent *event);
     void slotMouseMove(QMouseEvent *event);
 signals:
     void progressBarReplotted();
-
+    void soundFilePrepared();
+    void soundFileDestroyed();
     void waveFormReady();
 
 private:
